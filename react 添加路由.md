@@ -81,7 +81,7 @@ if (module.hot) {
 // 前提是使用create-react-app  v3.4.1 生成的项目
 ```
 
-contentEditable\=\"true\"
+contentEditable=\"true\"
 
 suppressContentEditableWarning
 

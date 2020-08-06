@@ -2,7 +2,7 @@
 
 不多说。
 
-#### 其他方法
+#### 其他标签使用svg
 
 除了直接使用svg标签，还有如下方法：
 
@@ -116,15 +116,90 @@ webpack loader配置
 
 #### react使用svg-sprite-loader
 
-##### 坑：create-react-app中的babel-loader设置了对svg处理，导致svg-sprite-loader失效，注释掉如下代码：
+在webpack.config.js中添加配置：
+
+```javascript
+{
+  test: /\.svg$/,
+  loader: 'svg-sprite-loader',
+  include: [path.resolve(__dirname, '../src/icons')], // 只处理指定svg的文件
+  options: {
+    symbolId: 'icon-[name]'
+  }
+},
+```
+
+定义Icon组件：
+
+```javascript
+import React, {Component} from 'react'
+export default class extends Component{
+  render() {
+    const {className,type} = this.props
+    return (
+        <svg className={className}>
+          <use xlinkHref={`#icon-${type}`}></use>
+        </svg>
+    )
+  }
+}
+```
+
+使用组件：
+
+```javascript
+import Icon from 'src/components/icon'
+......
+<Icon className="icon-user-icon icon-s-normal-tny" type="user-icon" />
+```
+
+##### 注意：create-react-app中的file-loader设置了对svg处理，导致svg-sprite-loader失效，在下面的exclude添加/\.svg$/：
 
 ```
-// svg: {
-//   ReactComponent:
-//     '@svgr/webpack?-svgo,+titleProp,+ref![path]',
-// },
-// 代码的具体用处是什么，还没有查清楚，以后再看。
+ {
+    loader: require.resolve('file-loader'),
+    exclude: [/\.(js|mjs|jsx|ts|tsx)$/, /\.html$/, /\.json$/],
+ 		options: {
+         name: 'static/media/[name].[hash:8].[ext]',
+     },
+ },
 ```
 
+#### @svgr/webpack在react中使用svg
 
+如果不使用svg-spirite-loader，create-react-app项目中还支持一种使用svg的方法，在webpack.config.js的babel-loader中的配置：
 
+```javascript
+require.resolve('babel-plugin-named-asset-import'),
+{
+  loaderMap: {
+    svg: {
+      ReactComponent: '@svgr/webpack?-svgo,+titleProp,+ref![path]',
+    },
+  },
+},
+```
+
+```javascript
+import{ReactComponent as User} from  'src/icons/user-icon.svg' //ReactComponent是必须的
+```
+
+像使用React组件一样使用：
+
+```
+<User />
+```
+
+此处的babel插件`babel-plugin-named-asset-import`的作用是将：
+
+```
+import {ReactComponent as User} from  'src/icons/user-icon.svg'
+```
+
+转换为：
+
+```
+import { ReactComponent as User } from "@svgr/webpack?-svgo,+titleProp,+ref!/static/media/user-icon.dccd0fcf.svg";
+```
+
+然后由@svgr/webpack处理。
