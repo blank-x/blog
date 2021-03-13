@@ -3,6 +3,7 @@
 # 遍历对象
 
 # Object.keys
+
 ```
 Object.keys()返回一个数组，包括对象自身的（不含继承的）所有可枚举属性（不含 Symbol 属性）的键名。
 ```
@@ -16,6 +17,7 @@ Reflect.ownKeys()返回一个数组，包含对象自身的所有键名，不管
 Object.getOwnPropertyDescriptors方法，返回指定对象所有自身属性（非继承属性）的描述对象(ES2017) 
 ```
 # Object.assign
+
 1. Object.assign是浅拷贝,对于值是引用类型的属性拷贝扔的是它的引用  
 
 2. 对于Symbol属性同样可以拷贝
@@ -107,6 +109,7 @@ ES5 提供了 Object.defineProperty 方法，该方法可以在一个对象上�
 ## **语法**
 >Object.defineProperty(obj, prop, descriptor) 
 ## **参数**
+
 ```
 obj: 要在其上定义属性的对象。 
 prop:  要定义或修改的属性的名称。
