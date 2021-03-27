@@ -1,21 +1,26 @@
-# es6 模块和commonjs规范模块的区别
+相关代码地址：https://github.com/blank-x/blog-code/tree/main/1-module
 
-## es6 导出模块不能修改
+#### 引入变量
 
-<img src="https://tva1.sinaimg.cn/large/008eGmZEgy1gnqi88iarsj30kc012glk.jpg" alt="image.png" style="zoom: 50%;" />
+es6 导入变量只是一个符号链接，是个常量，类似于const 声明；
 
-这个变量只是一个符号链接，是个常量，类似于const 声明；不能直接重新赋值，如果变量是引用数据类型，其中的属性可以修改；
-
-```javascript
+```js
 <script type="module">
   import mod1 from './module1.js'
-	console.log(mod1);
-	mod1 = 12 // 会报上面的错误
+  console.log(mod1);
+  mod1 = 12 // 类似于const 声明 会报错误
 </script>
 ```
-## es6 模块输出的是一个值的引用
 
-```javascript
+commonjs 导入变量没有这样的限制
+
+
+
+#### 模块输出
+
+**es6 模块输出的是一个值的引用,引用随原始值变化而变化**
+
+```js
 // index.html
 <script type="module">
     import {b} from './module1.js'
@@ -30,65 +35,17 @@ setTimeout(()=>{
   b++
 },500)
 export let b = 12
-```
-上面的例子中两次打印的值不同，说明es6输出的不是值的拷贝，更向是一个引用、指针、链接；是能够动态改变的。
-
-## es6 import export语法只能写在顶层
-
-这是静态语法的要求；写在条件判断里的import会报错。
-## es6 的模块自动采用严格模式
-
-## es6 静态加载
-
-在执行之前，浏览器会做静态分析编译，同时通过export输出接口；export 语法是静态数据输出的关键，是对外的接口；
-
-##  es6 是异步的
-
-在页面中 通过`script type="module"`  加载远程模块， 即等到整个页面渲染完，再执行模块脚本，等同于打开了`<script>`标签的defer属性。`<script>`标签的async属性也可以打开，这时只要加载完成，渲染引擎就会中断渲染立即执行。执行完成后，再恢复渲染。
-
-## es6 循环加载
-
-es6 在加载之前有一个静态编译的过程，期间会把输出的接口给确定下来，当被循环加载的时候，不需要再次被编译和加载；
-
-```javascript
-// a.mjs
-import {bar} from './b';
-console.log('a.mjs');
-console.log(bar);
-export let foo = 'foo';
-
-
-// b.mjs
-import {foo} from './a';
-console.log('b.mjs');
-console.log(foo);
-export let bar = 'bar';
-// node --experimental-modules a.mjs       执行a.mjs
-// b.mjs         打印 b.mjs
-// ReferenceError: Cannot access 'foo' before initialization  报错 
-```
-
-报错原因：let 有一个暂时性死区的问题，foo在声明之前被使用(从侧面证明es6模块是一个动态引用);
-解决报错: 可以把export let foo = 'foo'; 中的let改为var  ;变量提升之后就没有这样的问题了。
-
-## es6 import 自动提到模块顶端
+// 上面的例子中两次打印的值不同，说明es6输出的不是值的拷贝，更像是一个引用、指针、链接，能够动态改变的。
 
 ```
-// es6-mod1.mjs
-console.log(111);
-import {bar} from './es6-mod2.mjs';
 
-// es6-mod2.mjs
-console.log('222'); 
 
-打印顺序
-// 222
-// 111
-```
 
-## CommonJs 导出的是一个模块对象
+**commonjs 导出的是一个普通对象,是模块的浅拷贝**
 
-这个对象上有模块的相关信息：
+exports导出的是一个对象，这个对象是通过运算得出的结果，因为是浅拷贝，如果其中包含的引用类数据，这个数据会被共享；
+
+模块对象上有模块的相关信息：
 
 - module.id 模块的识别符，通常是带有绝对路径的模块文件名。
 - module.filename 模块的文件名，带有绝对路径。
@@ -99,26 +56,109 @@ console.log('222');
 
 module.exports是当前模块对外输出的接口，其他文件加载该模块，其实是读取module.exports；
 所以一般说commonjs只能导出单个值，通过解构赋值获取其中的方法或者属性；
-## CommonJs 运行时加载
 
-## CommonJs 是动态语法可以写在判断里
 
-## CommonJs 中有缓存的概念
 
-比如nodejs中加载过的模块缓存在require.cache中;在循环加载的过程中，就是缓存在其中起的作用；
+#### 语法要求
 
-## CommonJs 引入的是模块的浅拷贝
+es6
 
-exports导出的是一个对象，这个对象是通过运算得出的结果，毕竟只是一个对象，如何其中中包含的引用类数据，这个数据就是共享的了。
-## CommonJs 导入的模块是普通变量
+1. import export语法只能写在顶层，写在条件判断里的import会报错;
+2. 自动采用严格模式;
 
-只是普通声明的变量，如果不是声明成const，重新对导出的变量赋值不会报错；
+commonjs没有对应的限制；
 
-## Commonjs 循环加载
+#### 静态加载
 
-输出已经执行的部分(从侧面证明这个commonjs中缓存的存在);
+es6
 
-## ES6 模块加载 CommonJS 模块
+在执行之前，浏览器会做静态分析编译，同时通过export输出接口；export 语法是静态数据输出的关键，是对外的接口；
+
+commonjs
+
+运行时加载
+
+####  异步加载
+
+es6
+
+如果是在浏览器中，通过`script type="module"`  加载远程模块， 即等到整个页面渲染完，再执行模块脚本，等同于打开了`<script>`标签的defer属性。
+
+> `<script>`标签的async属性也可以打开，这时只要加载完成，渲染引擎就会中断渲染立即执行。执行完成后，再恢复渲染。
+
+commonjs
+
+没有异步加载的概念
+
+#### 循环加载
+
+es6 
+
+在加载之前有一个静态编译的过程，期间会把输出的接口给确定下来，当被循环加载的时候，导出这些确定的接口，不需要再次被编译和加载；
+
+es6对模块只生成一个引用，所以并不存在循环加载；但是需要我们自己保证能够加载到数据，比如下面打印出了undefined；
+
+```javascript
+// a.js
+import {bar} from './circle-2.js';
+console.log('a.js');
+console.log(bar);
+export var foo = 'foo';
+
+// b.js
+import {foo} from './circle-1.js';
+console.log('b.js');
+console.log(foo);
+export var bar = 'bar';
+// b.js
+// circle-2.js:3 undefined
+// circle-1.js:2 a.js
+// circle-1.js:3 bar
+```
+
+
+
+Commonjs 
+
+输出已经执行的部分;
+
+在循环加载的过程中，其实就是类似缓存在其中起的作用；nodejs中加载过的模块缓存在require.cache中，
+
+```js
+// 直接在nodejs中执行这个文件 commonjs-entry.js
+var b = {f:12}
+module.exports = b
+var commonjs1 = require('./commonjs-1')
+console.log(commonjs1); //  // { prop1: 1, prop2: 12 }
+b.name = 1
+console.log(b); // { f: 12, name: 1 }
+
+// commonjs-1.js
+var a = {prop1:1}
+module.exports = a
+var result1 = require('./commonjs-entry')
+console.log(result1); // { f: 12 }
+a.prop2 = 12
+```
+
+#### ES6 import 会自动提到模块顶端
+
+```js
+// es6-mod1.mjs
+console.log(111);
+import {bar} from './es6-mod2.mjs';
+
+// es6-mod2.mjs
+console.log('222'); 
+
+// 打印顺序
+// 222
+// 111
+```
+
+ 
+
+#### ES6 加载 CommonJS 模块
 
 这是在nodejs中允许的，只要使用node --experimental-modules  就可以正常加载了；
 因为commonjs输出的是一个对象，不能被静态分析，只能整体加载 ，那么就不知道输出有哪些接口，最终像`import {readfile} from 'fs' `这种代码在静态分析的时候自然会报错；
@@ -126,25 +166,26 @@ exports导出的是一个对象，这个对象是通过运算得出的结果，�
 ```javascript
 // a.js
 module.exports ={
-foo: 1
+	foo: 1
 }
 // main.mjs
 import baz from ' ./a';
-node --experimental-modules main.mjs
-// import {default as baz} from './a' 默认把module.exports输出到default上 这两种情况等价
+// 等价于 import {default as baz} from './a' 
 
-//import * as baz  from './a'
-// 输出是 baz: {default:{foo:1}}
+
+// terminal
+node --experimental-modules main.mjs
+// { foo: 1 }
+// { default: { foo: 1 } }
 ```
-## Commonjs 加载 es6 模块
+#### Commonjs 加载 es6 模块
 
 在nodejs中commonjs模块是无法直接加载es6模块的；因为require在es6模块下不能使用。
 
-## webpack 打包中对es6 模块的处理
+#### webpack 打包中对es6 模块的处理
 
 虽然es6中不能直接对import导出来的对象重新赋值，但是在前端开发过程中使用的webpack，重新赋值有什么不同呢？
 结论：也会报错，但是错误的内容和原因不一样；
-<img src="https://zsy-1256163601.cos.ap-beijing.myqcloud.com/image (1).png" alt="image (1)" style="zoom:50%;" />
 对下面的代码打包：
 
 ```javascript
@@ -157,7 +198,7 @@ Vue = 12
 var vue__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! vue */ "2b0e");
 // 打包后的代码中变量Vue被替换如下：vue__WEBPACK_IMPORTED_MODULE_4__["default"];
 console.log(vue__WEBPACK_IMPORTED_MODULE_4__["default"]);
-Vue = 12; // 这行代码没有变化，没有替换成vue__WEBPACK_IMPORTED_MODULE_4__["default"] ，报错的就是这一行，报错原因是严格模式下全局变量未声明
+Vue = 12; // 这行代码没有变化，没有替换成vue__WEBPACK_IMPORTED_MODULE_4__["default"] ，报错的就是这一行
 ```
 
-
+> 报错原因是严格模式下全局变量未声明
